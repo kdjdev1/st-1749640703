@@ -127,9 +127,105 @@
             box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
         }
 
+        .editor-container {
+            margin-bottom: 30px;
+        }
+
+        .formatting-toolbar {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            border-bottom: none;
+            border-radius: 15px 15px 0 0;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .toolbar-group {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .toolbar-btn {
+            padding: 8px 12px;
+            border: 2px solid #dee2e6;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            min-width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toolbar-btn:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+        }
+
+        .toolbar-btn.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .toolbar-select {
+            padding: 8px 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            height: 36px;
+        }
+
+        .toolbar-select:hover, .toolbar-select:focus {
+            border-color: #667eea;
+            outline: none;
+        }
+
+        .rich-editor {
+            width: 100%;
+            min-height: 300px;
+            padding: 20px;
+            border: 2px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 15px 15px;
+            font-size: 16px;
+            font-family: 'Times New Roman', serif;
+            background: #fafafa;
+            outline: none;
+            line-height: 1.6;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .rich-editor:focus {
+            background: white;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .rich-editor:empty:before {
+            content: attr(data-placeholder);
+            color: #6c757d;
+            white-space: pre-line;
+        }
+
+        .rich-editor [data-font-size] {
+            font-size: attr(data-font-size);
+        }
+
         .textarea-container {
             position: relative;
-            margin-bottom: 30px;
+            margin-bottom: 0;
         }
 
         #textInput {
@@ -143,6 +239,7 @@
             resize: vertical;
             transition: all 0.3s ease;
             background: #fafafa;
+            display: none; /* Hidden as we're using rich editor now */
         }
 
         #textInput:focus {
@@ -362,26 +459,66 @@
                         <option value="large">Large</option>
                     </select>
                 </div>
+                <div class="setting-group">
+                    <label for="fontWeight">Font Weight:</label>
+                    <select id="fontWeight">
+                        <option value="normal" selected>Normal</option>
+                        <option value="bold">Bold</option>
+                    </select>
+                </div>
             </div>
 
-            <div class="textarea-container">
-                <textarea 
-                    id="textInput" 
-                    placeholder="Enter your text here... 
+            <div class="editor-container">
+                <div class="formatting-toolbar">
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" id="boldBtn" title="Bold (Ctrl+B)">
+                            <strong>B</strong>
+                        </button>
+                        <button class="toolbar-btn" id="italicBtn" title="Italic (Ctrl+I)">
+                            <em>I</em>
+                        </button>
+                        <button class="toolbar-btn" id="underlineBtn" title="Underline (Ctrl+U)">
+                            <u>U</u>
+                        </button>
+                    </div>
+                    <div class="toolbar-group">
+                        <select id="textFontSize" class="toolbar-select" title="Font Size">
+                            <option value="8">8pt</option>
+                            <option value="10">10pt</option>
+                            <option value="12" selected>12pt</option>
+                            <option value="14">14pt</option>
+                            <option value="16">16pt</option>
+                            <option value="18">18pt</option>
+                            <option value="20">20pt</option>
+                            <option value="24">24pt</option>
+                            <option value="28">28pt</option>
+                            <option value="32">32pt</option>
+                        </select>
+                    </div>
+                    <div class="toolbar-group">
+                        <button class="toolbar-btn" id="clearFormatBtn" title="Clear Formatting">
+                            🧹
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="textarea-container">
+                    <div 
+                        id="textEditor" 
+                        contenteditable="true"
+                        class="rich-editor"
+                        data-placeholder="Enter your text here...
 
-You can type multiple paragraphs, and they will be preserved in the PDF.
+You can now format individual text with:
+• Bold, italic, and underline formatting
+• Individual font size adjustments
+• Rich text editing capabilities
+• Live preview with formatting
 
-Features:
-• Custom font sizes
-• Different page formats
-• Adjustable margins
-• Real-time character count
-• Live preview
-• Professional formatting
-
-Start typing to see the magic happen!"
-                ></textarea>
-                <div class="char-counter" id="charCounter">0 characters</div>
+Select text and use the toolbar above to apply formatting!"
+                    ></div>
+                    <div class="char-counter" id="charCounter">0 characters</div>
+                </div>
             </div>
 
             <div class="button-container">
@@ -407,7 +544,7 @@ Start typing to see the magic happen!"
     </div>
 
     <script>
-        const textInput = document.getElementById('textInput');
+        const textEditor = document.getElementById('textEditor');
         const charCounter = document.getElementById('charCounter');
         const generateBtn = document.getElementById('generateBtn');
         const previewBtn = document.getElementById('previewBtn');
@@ -417,10 +554,16 @@ Start typing to see the magic happen!"
         const previewSection = document.getElementById('previewSection');
         const previewContent = document.getElementById('previewContent');
 
-        // Character counter
-        textInput.addEventListener('input', function() {
-            const count = this.value.length;
-            charCounter.textContent = `${count.toLocaleString()} characters`;
+        // Toolbar buttons
+        const boldBtn = document.getElementById('boldBtn');
+        const italicBtn = document.getElementById('italicBtn');
+        const underlineBtn = document.getElementById('underlineBtn');
+        const textFontSize = document.getElementById('textFontSize');
+        const clearFormatBtn = document.getElementById('clearFormatBtn');
+
+        // Rich text editor functionality
+        textEditor.addEventListener('input', function() {
+            updateCharCounter();
             
             // Update preview if it's visible
             if (previewSection.style.display !== 'none') {
@@ -428,20 +571,122 @@ Start typing to see the magic happen!"
             }
         });
 
+        function updateCharCounter() {
+            const text = textEditor.innerText || textEditor.textContent || '';
+            const count = text.length;
+            charCounter.textContent = `${count.toLocaleString()} characters`;
+        }
+
+        // Formatting functions
+        function execCommand(command, value = null) {
+            document.execCommand(command, false, value);
+            textEditor.focus();
+            updateToolbarState();
+        }
+
+        function updateToolbarState() {
+            boldBtn.classList.toggle('active', document.queryCommandState('bold'));
+            italicBtn.classList.toggle('active', document.queryCommandState('italic'));
+            underlineBtn.classList.toggle('active', document.queryCommandState('underline'));
+        }
+
+        // Toolbar event listeners
+        boldBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            execCommand('bold');
+        });
+
+        italicBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            execCommand('italic');
+        });
+
+        underlineBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            execCommand('underline');
+        });
+
+        textFontSize.addEventListener('change', function() {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0 && !selection.isCollapsed) {
+                const fontSize = this.value + 'pt';
+                execCommand('fontSize', '7'); // Set to largest size first
+                
+                // Apply custom font size to selected text
+                const selectedText = selection.toString();
+                if (selectedText) {
+                    const span = document.createElement('span');
+                    span.style.fontSize = fontSize;
+                    
+                    try {
+                        const range = selection.getRangeAt(0);
+                        range.deleteContents();
+                        span.textContent = selectedText;
+                        range.insertNode(span);
+                        
+                        // Clear selection
+                        selection.removeAllRanges();
+                    } catch (e) {
+                        console.error('Error applying font size:', e);
+                    }
+                }
+            }
+            textEditor.focus();
+        });
+
+        clearFormatBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0 && !selection.isCollapsed) {
+                execCommand('removeFormat');
+                
+                // Also remove custom font sizes
+                const range = selection.getRangeAt(0);
+                const selectedContent = range.extractContents();
+                const textContent = selectedContent.textContent;
+                range.insertNode(document.createTextNode(textContent));
+            }
+        });
+
+        // Keyboard shortcuts
+        textEditor.addEventListener('keydown', function(e) {
+            if (e.ctrlKey || e.metaKey) {
+                switch (e.key.toLowerCase()) {
+                    case 'b':
+                        e.preventDefault();
+                        execCommand('bold');
+                        break;
+                    case 'i':
+                        e.preventDefault();
+                        execCommand('italic');
+                        break;
+                    case 'u':
+                        e.preventDefault();
+                        execCommand('underline');
+                        break;
+                }
+            }
+        });
+
+        // Update toolbar state on selection change
+        document.addEventListener('selectionchange', updateToolbarState);
+
         // Clear text functionality
         clearBtn.addEventListener('click', function() {
             if (confirm('Are you sure you want to clear all text?')) {
-                textInput.value = '';
+                textEditor.innerHTML = '';
                 charCounter.textContent = '0 characters';
-                previewContent.textContent = '';
+                previewContent.innerHTML = '';
                 hidePreview();
                 showStatus('Text cleared successfully!', 'success');
+                textEditor.focus();
             }
         });
 
         // Preview functionality
         previewBtn.addEventListener('click', function() {
-            if (textInput.value.trim() === '') {
+            const text = textEditor.innerText || textEditor.textContent || '';
+            if (text.trim() === '') {
                 showStatus('Please enter some text to preview.', 'error');
                 return;
             }
@@ -453,7 +698,26 @@ Start typing to see the magic happen!"
 
         function updatePreview() {
             const fontSize = document.getElementById('fontSize').value;
-            previewContent.textContent = textInput.value;
+            const fontWeight = document.getElementById('fontWeight').value;
+            
+            // Clone the editor content to preserve formatting
+            previewContent.innerHTML = textEditor.innerHTML;
+            
+            // Apply base font settings while preserving individual formatting
+            const allElements = previewContent.querySelectorAll('*');
+            allElements.forEach(el => {
+                if (!el.style.fontSize) {
+                    el.style.fontSize = fontSize + 'px';
+                }
+                if (!el.style.fontWeight && fontWeight === 'bold') {
+                    el.style.fontWeight = 'bold';
+                }
+            });
+            
+            // Apply to the container itself
+            if (fontWeight === 'bold') {
+                previewContent.style.fontWeight = 'bold';
+            }
             previewContent.style.fontSize = fontSize + 'px';
         }
 
@@ -461,11 +725,12 @@ Start typing to see the magic happen!"
             previewSection.style.display = 'none';
         }
 
-        // PDF Generation
+        // Enhanced PDF Generation with rich text support
         generateBtn.addEventListener('click', function() {
-            const text = textInput.value.trim();
+            const htmlContent = textEditor.innerHTML;
+            const textContent = textEditor.innerText || textEditor.textContent || '';
             
-            if (!text) {
+            if (!textContent.trim()) {
                 showStatus('Please enter some text to generate PDF.', 'error');
                 return;
             }
@@ -477,9 +742,10 @@ Start typing to see the magic happen!"
             try {
                 // Get settings
                 const fileName = document.getElementById('fileName').value.trim() || 'document';
-                const fontSize = parseInt(document.getElementById('fontSize').value);
+                const defaultFontSize = parseInt(document.getElementById('fontSize').value);
                 const pageFormat = document.getElementById('pageFormat').value;
                 const marginSize = document.getElementById('marginSize').value;
+                const defaultFontWeight = document.getElementById('fontWeight').value;
 
                 // Create PDF
                 const { jsPDF } = window.jspdf;
@@ -506,32 +772,84 @@ Start typing to see the magic happen!"
                 const pageWidth = doc.internal.pageSize.getWidth();
                 const pageHeight = doc.internal.pageSize.getHeight();
                 const textWidth = pageWidth - margins.left - margins.right;
-                const textHeight = pageHeight - margins.top - margins.bottom;
 
-                // Set font
-                doc.setFontSize(fontSize);
-                doc.setFont("times", "normal");
-
-                // Split text into lines that fit the page width
-                const lines = doc.splitTextToSize(text, textWidth);
-                
-                // Calculate line height based on font size
-                const lineHeight = fontSize * 0.4;
                 let currentY = margins.top;
                 let pageNumber = 1;
 
-                // Add text to PDF
-                for (let i = 0; i < lines.length; i++) {
-                    // Check if we need a new page
-                    if (currentY + lineHeight > pageHeight - margins.bottom) {
-                        doc.addPage();
-                        currentY = margins.top;
-                        pageNumber++;
+                // Parse HTML content and convert to PDF
+                function parseHtmlToPdf(element) {
+                    const children = Array.from(element.childNodes);
+                    
+                    for (let child of children) {
+                        if (child.nodeType === Node.TEXT_NODE) {
+                            const text = child.textContent;
+                            if (text.trim()) {
+                                addTextToPdf(text, defaultFontSize, defaultFontWeight);
+                            }
+                        } else if (child.nodeType === Node.ELEMENT_NODE) {
+                            const tagName = child.tagName.toLowerCase();
+                            let fontSize = defaultFontSize;
+                            let fontWeight = defaultFontWeight;
+                            
+                            // Extract font size from inline styles
+                            const style = child.style;
+                            if (style.fontSize) {
+                                const sizeMatch = style.fontSize.match(/(\d+)/);
+                                if (sizeMatch) {
+                                    fontSize = parseInt(sizeMatch[1]);
+                                }
+                            }
+                            
+                            // Determine font weight
+                            if (tagName === 'b' || tagName === 'strong' || style.fontWeight === 'bold') {
+                                fontWeight = 'bold';
+                            }
+                            
+                            // Handle different elements
+                            if (tagName === 'br' || tagName === 'div' || tagName === 'p') {
+                                currentY += fontSize * 0.4; // Line break
+                                if (child.textContent.trim()) {
+                                    parseHtmlToPdf(child);
+                                }
+                                if (tagName === 'div' || tagName === 'p') {
+                                    currentY += fontSize * 0.2; // Paragraph spacing
+                                }
+                            } else {
+                                const text = child.textContent;
+                                if (text.trim()) {
+                                    addTextToPdf(text, fontSize, fontWeight);
+                                }
+                            }
+                        }
                     }
-
-                    doc.text(lines[i], margins.left, currentY);
-                    currentY += lineHeight;
                 }
+
+                function addTextToPdf(text, fontSize, fontWeight) {
+                    // Set font properties
+                    doc.setFontSize(fontSize);
+                    doc.setFont("times", fontWeight);
+
+                    // Split text into lines that fit the page width
+                    const lines = doc.splitTextToSize(text, textWidth);
+                    const lineHeight = fontSize * 0.4;
+
+                    for (let line of lines) {
+                        // Check if we need a new page
+                        if (currentY + lineHeight > pageHeight - margins.bottom) {
+                            doc.addPage();
+                            currentY = margins.top;
+                            pageNumber++;
+                        }
+
+                        doc.text(line, margins.left, currentY);
+                        currentY += lineHeight;
+                    }
+                }
+
+                // Create a temporary div to parse HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = htmlContent;
+                parseHtmlToPdf(tempDiv);
 
                 // Add page numbers if more than one page
                 if (pageNumber > 1) {
@@ -539,6 +857,7 @@ Start typing to see the magic happen!"
                     for (let i = 1; i <= totalPages; i++) {
                         doc.setPage(i);
                         doc.setFontSize(10);
+                        doc.setFont("times", "normal");
                         doc.text(`Page ${i} of ${totalPages}`, 
                             pageWidth - margins.right - 20, 
                             pageHeight - margins.bottom + 10);
@@ -548,7 +867,7 @@ Start typing to see the magic happen!"
                 // Save the PDF
                 doc.save(`${fileName}.pdf`);
                 
-                showStatus(`PDF "${fileName}.pdf" generated successfully!`, 'success');
+                showStatus(`PDF "${fileName}.pdf" generated successfully with formatting!`, 'success');
                 
             } catch (error) {
                 console.error('Error generating PDF:', error);
@@ -569,14 +888,9 @@ Start typing to see the magic happen!"
             }, 4000);
         }
 
-        // Auto-resize textarea
-        textInput.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.max(300, this.scrollHeight) + 'px';
-        });
-
         // Initialize
-        textInput.dispatchEvent(new Event('input'));
+        updateCharCounter();
+        textEditor.focus();
     </script>
 </body>
 </html>
